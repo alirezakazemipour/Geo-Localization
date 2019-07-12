@@ -16,7 +16,7 @@ void getPosition::ReadRecPacket(QByteArray data)
 
     RecDataStream >> StartPacket;
 
-    if( QString::compare(StartPacket,"St") == 0 )
+    if( QString::compare(StartPacket,"S") == 0 )
         RecDataStream >> cur_location;
 
     datagram.clear();

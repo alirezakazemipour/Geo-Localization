@@ -22,6 +22,7 @@ ROBOT_IP = QHostAddress("127.0.0.1")
 ROBOT_data_port=5678
 
 def receive_data():
+
     print("image Rec")
     datagram = qb()
     datagram.resize(rec_data_socket.pendingDatagramSize())
@@ -29,13 +30,15 @@ def receive_data():
     datagram=qb(datagram)
     rec_data_socket.flush()
     buf=np.asarray(bytearray(datagram),dtype=np.uint8)
-    mat=cv2.imdecode(buf,cv2.CV_LOAD_IMAGE_COLOR)
+    mat=cv2.imdecode(buf,cv2.IMREAD_COLOR)
     datagram.clear()
 
     find_match(mat)
 
 
 def find_match(x):
+
+    # cv2.imshow("x",x)
 
     window = x
 
@@ -58,19 +61,23 @@ def find_match(x):
 
     points2 = [keypoints2[m.trainIdx].pt for m in good_matches]
     points2 = np.array( points2, dtype=np.float32 )
-    H, mask = cv2.findHomography( points1, points2, cv2.RANSAC, 5.0 )  # 5 pixels margin
-    mask = mask.ravel().tolist()
-    # print( mask )
+    try:
+        H, mask = cv2.findHomography( points1, points2, cv2.RANSAC, 5.0 )  # 5 pixels margin
+        mask = mask.ravel().tolist()
 
-    cx = 0
-    cy = 0
-    for k in range( len( points[0] ) ):
-        # cv2.circle(I1,(int(points[0][k][0]),int(points[0][k][1])),2,(0,0,255),-1)
-        cx += int( points[0][k][0] )
-        cy += int( points[0][k][1] )
-    cx = cx // len( points[0] )
-    cy = cy // len( points[0] )
-    sendLocation(cx,cy)
+        # print( mask )
+
+        cx = 0
+        cy = 0
+        for k in range( len( points[0] ) ):
+            # cv2.circle(I1,(int(points[0][k][0]),int(points[0][k][1])),2,(0,0,255),-1)
+            cx += int( points[0][k][0] )
+            cy += int( points[0][k][1] )
+        cx = cx // len( points[0] )
+        cy = cy // len( points[0] )
+    except:
+        cx = cy =0
+        sendLocation(cx,cy)
 
 
 def sendLocation(x,y):
@@ -78,7 +85,7 @@ def sendLocation(x,y):
     d=int(np.sqrt(x*x+y*y))
     datagram=qb()
     SendDataPacket = QDataStream(datagram,io.WriteOnly)
-    StartPacket = qb("St")
+    StartPacket = qb(1,"S")
     SendDataPacket << StartPacket
     SendDataPacket.writeInt(d)
     send_data_socket.writeDatagram( datagram, ROBOT_IP, ROBOT_data_port )
