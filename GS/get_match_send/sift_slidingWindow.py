@@ -8,6 +8,7 @@ flann =cv2.FlannBasedMatcher()
 sift = cv2.xfeatures2d.SIFT_create() # opencv 3
 I1 = cv2.imread('/home/alireza/Documents/Geo-Localization/map.jpg')
 G1 = cv2.cvtColor(I1,cv2.COLOR_BGR2GRAY)
+I_copy = I1.copy()
 keypoints1, desc1 = sift.detectAndCompute(G1, None); # opencv 3
 fnames=glob.glob("/home/alireza/Documents/Geo-Localization/slidingWindows/*.jpg")
 fnames.sort()
@@ -43,8 +44,8 @@ for fname in fnames:
         # print( mask )
 
         good_matches = [m for m, msk in zip( good_matches, mask ) if msk == 1]
-        # I = cv2.drawMatches( I1, keypoints1, window, keypoints2, good_matches,None,flags=2 )
-        # cv2.imshow("result",I)
+        I = cv2.drawMatches( I1, keypoints1, window, keypoints2, good_matches,None,flags=2 )
+        cv2.imshow("result",I)
         cx=0
         cy=0
 
@@ -54,8 +55,9 @@ for fname in fnames:
             cy+=int(points[0][k][1])
         cx=cx//len(points[0])
         cy=cy//len(points[0])
-        cv2.circle( I1, (cx, cy), 8, (0, 0, 255), -1 )
-        cv2.imshow("I1",I1)
+        cv2.circle( I_copy, (cx, cy), 8, (0, 0, 255), -1 )
+        cv2.line(I_copy,(0,0),(cx,cy),(255,0,0),2)
+        cv2.imshow("I1",I_copy)
         cv2.waitKey(0)
 
 cv2.destroyAllWindows()

@@ -1,9 +1,10 @@
 from PyQt5.QtCore import QByteArray as qb
 from PyQt5.QtNetwork import QUdpSocket,QHostAddress
-import sys,PyQt5.QtCore
+from PyQt5.QtCore import QIODevice as io
 from PyQt5.QtCore import *
 import numpy as np
 import cv2
+import  sys
 
 
 bf = cv2.BFMatcher()
@@ -13,7 +14,12 @@ G1 = cv2.cvtColor(I1,cv2.COLOR_BGR2GRAY)
 keypoints1, desc1 = sift.detectAndCompute(G1, None); # opencv 3
 
 
-data_port=1234
+img_port=1234
+
+
+send_data_socket=QUdpSocket()
+ROBOT_IP = QHostAddress("127.0.0.1")
+ROBOT_data_port=5678
 
 def receive_data():
     print("image Rec")
@@ -25,7 +31,7 @@ def receive_data():
     buf=np.asarray(bytearray(datagram),dtype=np.uint8)
     mat=cv2.imdecode(buf,cv2.CV_LOAD_IMAGE_COLOR)
     datagram.clear()
-    cv2.imshow("frame",mat)
+
     find_match(mat)
 
 
@@ -38,6 +44,7 @@ def find_match(x):
     matches = bf.knnMatch( desc1, desc2, k=2 )
     # matches = flann.knnMatch(desc1, desc2 ,k=2)
     good_matches = []
+    points = []
     alpha = 0.25
     for m1, m2 in matches:
         # m1 is the best match
@@ -55,20 +62,38 @@ def find_match(x):
     mask = mask.ravel().tolist()
     # print( mask )
 
-    good_matches = [m for m, msk in zip( good_matches, mask ) if msk == 1]
+    cx = 0
+    cy = 0
+    for k in range( len( points[0] ) ):
+        # cv2.circle(I1,(int(points[0][k][0]),int(points[0][k][1])),2,(0,0,255),-1)
+        cx += int( points[0][k][0] )
+        cy += int( points[0][k][1] )
+    cx = cx // len( points[0] )
+    cy = cy // len( points[0] )
+    sendLocation(cx,cy)
 
-    I = cv2.drawMatches( I1, keypoints1, window, keypoints2, good_matches, None, flags=2 )
-    cv2.imshow( "result", I )
-    cv2.waitKey( 0 )
+
+def sendLocation(x,y):
+
+    d=int(np.sqrt(x*x+y*y))
+    datagram=qb()
+    SendDataPacket = QDataStream(datagram,io.WriteOnly)
+    StartPacket = qb("St")
+    SendDataPacket << StartPacket
+    SendDataPacket.writeInt(d)
+    send_data_socket.writeDatagram( datagram, ROBOT_IP, ROBOT_data_port )
+    send_data_socket.flush()
+    print( "Data sent" )
+    datagram.clear()
+
 
 
 if __name__=="__main__":
 
-  app = QCoreApplication(sys.argv)
-  print("program started")
-  rec_data_socket = QUdpSocket()
-  rec_data_socket.bind(data_port)
-  # QObject.connect(rec_data_socket, SIGNAL("readyRead(PyQt_PyObject)"), receive_data)
-  rec_data_socket.readyRead.connect(receive_data)
+    app = QCoreApplication(sys.argv)
+    print("program started")
+    rec_data_socket = QUdpSocket()
+    rec_data_socket.bind(img_port)
+    rec_data_socket.readyRead.connect(receive_data)
 
 app.exec_()
