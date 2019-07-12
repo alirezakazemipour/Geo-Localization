@@ -59,14 +59,11 @@ def find_match(x):
     points1 = [keypoints1[m.queryIdx].pt for m in good_matches]
     points1 = np.array( points1, dtype=np.float32 )
 
-    points2 = [keypoints2[m.trainIdx].pt for m in good_matches]
-    points2 = np.array( points2, dtype=np.float32 )
+    points.append(points1)
+
+    # points2 = [keypoints2[m.trainIdx].pt for m in good_matches]
+    # points2 = np.array( points2, dtype=np.float32 )
     try:
-        H, mask = cv2.findHomography( points1, points2, cv2.RANSAC, 5.0 )  # 5 pixels margin
-        mask = mask.ravel().tolist()
-
-        # print( mask )
-
         cx = 0
         cy = 0
         for k in range( len( points[0] ) ):
@@ -77,7 +74,7 @@ def find_match(x):
         cy = cy // len( points[0] )
     except:
         cx = cy =0
-        sendLocation(cx,cy)
+    sendLocation(cx,cy)
 
 
 def sendLocation(x,y):
@@ -90,6 +87,7 @@ def sendLocation(x,y):
     SendDataPacket.writeInt(d)
     send_data_socket.writeDatagram( datagram, ROBOT_IP, ROBOT_data_port )
     send_data_socket.flush()
+    print("d= ",d)
     print( "Data sent" )
     datagram.clear()
 
