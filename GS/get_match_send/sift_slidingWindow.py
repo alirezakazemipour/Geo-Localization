@@ -14,6 +14,7 @@ fnames=glob.glob("/home/alireza/Documents/Geo-Localization/slidingWindows/*.jpg"
 fnames.sort()
 
 cv2.namedWindow("result",cv2.WINDOW_NORMAL)
+cv2.namedWindow("distance",cv2.WINDOW_NORMAL)
 
 for fname in fnames:
         # print(fname)
@@ -57,7 +58,7 @@ for fname in fnames:
         cy=cy//len(points[0])
         cv2.circle( I_copy, (cx, cy), 8, (0, 0, 255), -1 )
         cv2.line(I_copy,(0,0),(cx,cy),(255,0,0),2)
-        cv2.imshow("I1",I_copy)
+        cv2.imshow("distance",I_copy)
         cv2.waitKey(0)
 
 cv2.destroyAllWindows()
