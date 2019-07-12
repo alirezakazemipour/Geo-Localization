@@ -15,7 +15,7 @@ fnames.sort()
 cv2.namedWindow("result",cv2.WINDOW_NORMAL)
 
 for fname in fnames:
-        print(fname)
+        # print(fname)
         window=cv2.imread(fname,cv2.COLOR_BGR2GRAY)
 
         keypoints2, desc2 = sift.detectAndCompute( window, None );  # opencv 3
@@ -23,6 +23,7 @@ for fname in fnames:
         matches = bf.knnMatch( desc1, desc2, k=2 )
         # matches = flann.knnMatch(desc1, desc2 ,k=2)
         good_matches = []
+        points = []
         alpha = 0.25
         for m1, m2 in matches:
             # m1 is the best match
@@ -36,14 +37,25 @@ for fname in fnames:
 
         points2 = [keypoints2[m.trainIdx].pt for m in good_matches]
         points2 = np.array( points2, dtype=np.float32 )
+        points.append(points1)
         H, mask = cv2.findHomography( points1, points2, cv2.RANSAC, 5.0 )  # 5 pixels margin
         mask = mask.ravel().tolist()
         # print( mask )
 
         good_matches = [m for m, msk in zip( good_matches, mask ) if msk == 1]
+        # I = cv2.drawMatches( I1, keypoints1, window, keypoints2, good_matches,None,flags=2 )
+        # cv2.imshow("result",I)
+        cx=0
+        cy=0
 
-        I = cv2.drawMatches( I1, keypoints1, window, keypoints2, good_matches,None,flags=2 )
-        cv2.imshow("result",I)
+        for k in range(len(points[0])):
+            # cv2.circle(I1,(int(points[0][k][0]),int(points[0][k][1])),2,(0,0,255),-1)
+            cx+=int(points[0][k][0])
+            cy+=int(points[0][k][1])
+        cx=cx//len(points[0])
+        cy=cy//len(points[0])
+        cv2.circle( I1, (cx, cy), 8, (0, 0, 255), -1 )
+        cv2.imshow("I1",I1)
         cv2.waitKey(0)
 
 cv2.destroyAllWindows()
