@@ -8,6 +8,7 @@
 #include <optflow.h>
 #include <quad_board.h>
 #include <QThread>
+#include <getposition.h>
 //#include <iostream>
 
 Q_DECLARE_METATYPE(cv::Mat)
@@ -24,6 +25,7 @@ public:
     capture camera;
     QTimer timer;
     sendImg transmit;
+    getPosition recieve;
 
     OptFlow opt;
     Quad_Board robot;
@@ -32,6 +34,7 @@ public:
     QThread opt_thread;
     QThread transmit_thread;
     QThread robot_thread;
+    QThread recieve_thread;
 public slots:
 
 

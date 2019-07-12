@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     opt.moveToThread(&opt_thread);
     transmit.moveToThread(&transmit_thread);
     robot.moveToThread(&robot_thread);
+    recieve.moveToThread(&recieve_thread);
     //#endif
 
 
@@ -23,11 +24,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&camera,SIGNAL(down_image_opt(cv::Mat)),&opt,SLOT(timerEvent(cv::Mat)));
 
     connect(&opt,SIGNAL(optSig(int,int)),&robot,SLOT(optFlow_CB(int,int)));
+
+    connect(&recieve.rec_data_socket,SIGNAL(readyRead()),&recieve,SLOT(receive_data()));
+    connect(&recieve,SIGNAL(current_loaction(int)),&robot,SLOT(location_CB(int)));
     //#ifdef Threading
 
     qDebug()<<"MW_T"<<QThread::currentThreadId();
     cam_thread.start();
     opt_thread.start();
+    recieve_thread.start();
     robot_thread.start();
     //#endif
     timer.start(2);

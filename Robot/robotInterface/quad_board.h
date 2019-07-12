@@ -60,9 +60,7 @@ public:
 
 public slots:
     void readData();
-    void lineSerial_CB(double dist, double angle,int hassan);
-    void gateSerial_CB(int movement);
-    void landingPadSerial_CB(int land);
+    void location_CB(int a);
     void optFlow_CB(int delta_x , int delta_y);
 
 

@@ -4,25 +4,25 @@
 
 Quad_Board::Quad_Board(QObject *parent) : QObject(parent)
 {
-        QString portName = QLatin1String(_DEV_SERIAL);
-        serial_port =  new QextSerialPort(QString(portName), QextSerialPort::EventDriven);
-        serial_port->close();
-        serial_port->setPortName(_DEV_SERIAL);
+    QString portName = QLatin1String(_DEV_SERIAL);
+    serial_port =  new QextSerialPort(QString(portName), QextSerialPort::EventDriven);
+    serial_port->close();
+    serial_port->setPortName(_DEV_SERIAL);
 
-        serial_port->open(QIODevice::ReadWrite);
+    serial_port->open(QIODevice::ReadWrite);
 
-        serial_port->setBaudRate(BAUD115200);
-        serial_port->setParity(PAR_NONE);   
-        serial_port->setFlowControl(FLOW_OFF);
-        serial_port->setDataBits(DATA_8);
-        serial_port->setStopBits(STOP_1);
+    serial_port->setBaudRate(BAUD115200);
+    serial_port->setParity(PAR_NONE);
+    serial_port->setFlowControl(FLOW_OFF);
+    serial_port->setDataBits(DATA_8);
+    serial_port->setStopBits(STOP_1);
 
-        serial_port->setDtr(0);
-        serial_port->setRts(0);
+    serial_port->setDtr(0);
+    serial_port->setRts(0);
 
-        serial_port->flush();
+    serial_port->flush();
 
-  
+
 
     ready = false;
     decode_stage = 0;
@@ -30,17 +30,17 @@ Quad_Board::Quad_Board(QObject *parent) : QObject(parent)
     j=0;
     integer_received_counter = 0;
     Num = 0;
-       if( serial_port->isOpen())
-        {
-            qDebug("Serial Port Opened  .");
-        }
-        else
-        {
-            qDebug("Serial Port NOT Opened!!!!!!!");
-            exit(0);
+    if( serial_port->isOpen())
+    {
+        qDebug("Serial Port Opened  .");
+    }
+    else
+    {
+        qDebug("Serial Port NOT Opened!!!!!!!");
+        exit(0);
 
-        }
-     connect(serial_port, SIGNAL(readyRead()), this, SLOT(readData()));
+    }
+    connect(serial_port, SIGNAL(readyRead()), this, SLOT(readData()));
 }
 
 Quad_Board::~Quad_Board()
@@ -158,74 +158,40 @@ void Quad_Board::Send_Data()
     data_send.append((~(check_Sum) + 1));
     serial_port->write(data_send);
     //qDebug()<<data_send.toHex();
-   serial_port->flush();
+    serial_port->flush();
 
 }
 
-void Quad_Board::lineSerial_CB(double dist, double angle,int hassan)
-{
-//
-   // ROS_WARN("line running %d",dist.dx);
-    load[2]=18;
-    load[3]=int(dist);
-    load[4]=int(angle);
-            qDebug()<<"h"<<hassan;
-    load[7] = hassan;
-  //  load[5]=dist.direction;
-
-}
-
-void Quad_Board::gateSerial_CB(int movement)
-{
-    load[5]=movement;
-    //qDebug()<<"Gate Data"<<load[5];
-    //	0 down
-    
-    // 1 up
-
-}
-
-void Quad_Board::landingPadSerial_CB(int land)
-{
-    load[6]=land;
-    qDebug()<<"H Data"<<load[6];
-    //if 1 = landing pad existance
-}
-
-/*void Quad_Board::window_CB(const serial_handler::WinMsg &msg)
-{
-
-    qDebug()<<"WINDOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "<<msg.setpoint;
-    load[2]=msg.setpoint;
-    load[3]=msg.flag;
-    load[4]=msg.scale;
-    load[5]=msg.upperbound;
-}*/
 
 void Quad_Board::optFlow_CB(int delta_x, int delta_y)
 {
-   // qDebug()<<"optical!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! = "<<msg.delta_x;
+    // qDebug()<<"optical!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! = "<<msg.delta_x;
     load[0]=delta_x;
     load[1]=delta_y;
-// qDebug()<<load[2]<<" "<<load[3]<<" "<<load[4]<<" "<<load[5]<<endl;
-Fill_Data(8,load[0],load[1],load[2],load[3],load[4],load[5],load[6],load[7]);
+    // qDebug()<<load[2]<<" "<<load[3]<<" "<<load[4]<<" "<<load[5]<<endl;
+    Fill_Data(3,load[0],load[1],load[2]);
 
 }
 void Quad_Board::readData()
 {
-     QByteArray _data = serial_port->readAll();
+    QByteArray _data = serial_port->readAll();
     unsigned char a;
 
     //qDebug() << "read*";
     //printf("read\n");
 
-        for (int i=0;i<_data.size();i++)
-        {
-            a=_data.at(i) ;
-            Mpc_decode(a);
-        }
+    for (int i=0;i<_data.size();i++)
+    {
+        a=_data.at(i) ;
+        Mpc_decode(a);
+    }
 
 
+}
+
+void Quad_Board::location_CB(int a)
+{
+    load[2]=a;
 }
 
 
