@@ -33,5 +33,3 @@ DISTFILES += \
 
 LIBS += `pkg-config opencv --libs`
 
-SUBDIRS += \
-    autcup2019.pro

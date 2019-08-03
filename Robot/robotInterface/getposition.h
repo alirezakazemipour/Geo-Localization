@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QUdpSocket>
+#include "QDataStream"
 
 class getPosition : public QObject
 {
